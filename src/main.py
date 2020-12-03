@@ -1,1 +1,2 @@
-import joystic
+# for bluetooth transmission
+import joystick_ble

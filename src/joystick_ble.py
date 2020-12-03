@@ -1,4 +1,4 @@
-from machine import Pin, ADC
+import joystick
 from time import sleep
 
 # This example demonstrates a peripheral implementing the Nordic UART Service (NUS).
@@ -88,44 +88,18 @@ class BLEUART:
     def _advertise(self, interval_us=500000):
         self._ble.gap_advertise(interval_us, adv_data=self._payload)
 
-Ry = ADC(Pin(34))
-Ry.atten(ADC.ATTN_11DB)       #Full range: 3.3v
-Rx = ADC(Pin(35))
-Rx.atten(ADC.ATTN_11DB)       #Full range: 3.3v
-button1 = Pin(25, Pin.IN)
-Ly = ADC(Pin(32))
-Ly.atten(ADC.ATTN_11DB)       #Full range: 3.3v
-Lx = ADC(Pin(33))
-Lx.atten(ADC.ATTN_11DB)       #Full range: 3.3v
-button2 = Pin(26, Pin.IN)
-
 ble = ubluetooth.BLE()
 uart = BLEUART(ble)
 
 def on_rx():
     print("rx: ", uart.read().decode().strip())
 
-def readVal(pin, measurement_cycles=10):
-    tmp = 0.0
-    for _ in range(0, measurement_cycles):
-        tmp += pin.read()
-    # typical voltage_divider levels: 3.054 --> Exp Board 2.0, 2 --> Exp Board 3, 11 --> in-house implementation
-
-    #should we use round function since the following division returns millivolt?
-    return round((tmp/measurement_cycles))
-
 uart.irq(handler=on_rx)
 nums = [4, 8, 15, 16, 23, 42]
 i = 0
 
 while True:
-    vrx_pos_l = Rx.read()
-    vry_pos_l = Ry.read()
-    swt_val_l = button1.value()
-    vrx_pos_r = Lx.read()
-    vry_pos_r = Ly.read()
-    swt_val_r = button2.value()
-    str = ("{}|{}|{}-{}|{}|{}\n".format(vrx_pos_l, vry_pos_l, swt_val_l, vrx_pos_r, vry_pos_r, swt_val_r))
+    str = joystick.read_values()
     print(str)
     uart.write(str)
     sleep(0.1)
